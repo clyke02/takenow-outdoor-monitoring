@@ -1,0 +1,7 @@
+# Requirements untuk Dashboard Kelayakan Alat
+# Install: pip install -r requirements.txt
+
+streamlit>=1.29.0
+pandas>=2.1.0
+plotly>=5.18.0
+openpyxl>=3.1.0
