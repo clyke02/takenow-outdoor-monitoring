@@ -55,3 +55,9 @@ CACHE_TTL = 3600  # Cache duration in seconds (1 hour)
 MAX_ROWS_DISPLAY = 15  # Maximum rows to display in tables (reduced for performance)
 CHART_HEIGHT_DEFAULT = 400  # Default chart height
 ENABLE_PROFILER = False  # Set to True to debug performance
+
+# Authentication settings
+# Simple single-user authentication for demo purposes
+USERNAME = "admin"
+PASSWORD = "admin123"  # In production, use hashed passwords
+USER_DISPLAY_NAME = "Administrator"

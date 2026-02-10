@@ -6,9 +6,12 @@ Dashboard interaktif untuk monitoring kondisi dan kelayakan alat camping menggun
 
 ```
 Programm/
-├── app.py                          # Main application
-├── config.py                       # Configuration & constants
+├── app.py                          # Main application (with login check)
+├── auth.py                         # Authentication module
+├── config.py                       # Configuration & constants (with user credentials)
 ├── requirements.txt                # Python dependencies
+├── LOGIN_GUIDE.md                  # Login feature documentation
+├── WIREFRAME_LOGIN_PROMPT.md       # Login wireframe prompt
 ├── dataset/                        # Data files
 │   ├── katalog_barang.xlsx
 │   ├── riwayat_penyewaan.csv
@@ -40,9 +43,37 @@ streamlit run app.py
 
 Dashboard akan terbuka di browser pada `http://localhost:8501`
 
+### 3. Login
+
+Setelah dashboard terbuka, Anda akan melihat **Login Page**.
+
+**Default Credentials:**
+
+- Username: `admin`
+- Password: `admin123`
+
+Setelah login berhasil, Anda akan diarahkan ke dashboard utama.
+
+> 📖 Untuk detail lengkap tentang fitur login, lihat [LOGIN_GUIDE.md](LOGIN_GUIDE.md)
+
+## 🔐 Authentication
+
+Dashboard dilengkapi dengan **simple authentication** untuk memastikan hanya user terotorisasi yang dapat akses.
+
+**Fitur:**
+
+- ✅ Login page dengan username/password
+- ✅ Session management (tetap login selama sesi browser)
+- ✅ User info display di sidebar
+- ✅ Logout button untuk keluar
+
+**Security Note:**  
+Implementasi ini adalah demo authentication untuk keperluan academic/internal. Untuk production, implementasikan password hashing dan security best practices.
+
 ## 📊 Fitur Dashboard
 
 ### 1. **Overview** 📊
+
 - Key metrics (Total alat, maintenance events, biaya)
 - Distribusi status kelayakan alat
 - Pie chart rekomendasi
@@ -50,6 +81,7 @@ Dashboard akan terbuka di browser pada `http://localhost:8501`
 - Trend penyewaan bulanan
 
 ### 2. **Maintenance Analysis** 🔧
+
 - Summary metrics maintenance
 - Distribusi severity (Ringan/Sedang/Berat)
 - Kondisi alat setelah perbaikan
@@ -57,32 +89,38 @@ Dashboard akan terbuka di browser pada `http://localhost:8501`
 - Maintenance ratio analysis
 
 ### 3. **Rental Analysis** 📈
+
 - Total transaksi dan item disewa
 - Revenue per kategori alat
 - Chart utilisasi alat
 - Detail revenue breakdown
 
 ### 4. **Critical Items** ⚠️
+
 - Filter berdasarkan maintenance ratio threshold
 - List alat yang memerlukan perhatian khusus
 - Rekomendasi actionable untuk setiap item
 - Detail metrics per item kritis
 
 ### 5. **Data Tables** 📋
+
 - View raw data: Katalog, Penyewaan, Maintenance, Insight
 - Pagination untuk performa optimal
 
 ## 🏗️ Arsitektur (Clean Architecture)
 
 ### Data Layer (`src/data/`)
+
 - **loader.py**: Menghandle loading data dengan Streamlit caching
 - **processor.py**: Transformasi, agregasi, dan business logic
 
 ### Visualization Layer (`src/visualization/`)
+
 - **charts.py**: Reusable chart components (Plotly)
 - **metrics.py**: Reusable metric card components
 
 ### Configuration (`config.py`)
+
 - Centralized constants & settings
 - Color schemes & styling
 - File paths
@@ -97,7 +135,9 @@ Dashboard akan terbuka di browser pada `http://localhost:8501`
 ## 🎨 Customization
 
 ### Ubah Warna
+
 Edit `config.py`:
+
 ```python
 COLORS = {
     'primary': '#1f77b4',
@@ -108,11 +148,13 @@ COLORS = {
 ```
 
 ### Ubah Cache TTL
+
 ```python
 CACHE_TTL = 3600  # seconds
 ```
 
 ### Ubah Max Display Rows
+
 ```python
 MAX_ROWS_DISPLAY = 20
 ```
@@ -120,6 +162,7 @@ MAX_ROWS_DISPLAY = 20
 ## 📌 Key Insights yang Ditampilkan
 
 1. **Maintenance Ratio**: `jumlah_maintenance / freq_sewa`
+
    - > 50% = 🔴 PERLU PERHATIAN KHUSUS
    - 30-50% = 🟡 TINGKATKAN PEMELIHARAAN
    - < 30% = 🟢 LAYAK OPERASIONAL
@@ -133,15 +176,18 @@ MAX_ROWS_DISPLAY = 20
 ## 🔧 Troubleshooting
 
 **Error: Module not found**
+
 ```bash
 pip install -r requirements.txt
 ```
 
 **Error: File not found**
+
 - Pastikan semua file di folder `dataset/` ada
 - Check path di `config.py`
 
 **Dashboard lambat**
+
 - Reduce `MAX_ROWS_DISPLAY` di config
 - Clear cache: klik "Refresh Data" di sidebar
 

@@ -16,6 +16,7 @@ sys.path.append(str(Path(__file__).parent))
 
 # Import modules
 from config import PAGE_TITLE, PAGE_ICON, LAYOUT, MAX_ROWS_DISPLAY
+from auth import show_login_page, check_authentication, logout, get_current_user
 from src.data.loader import load_all_data, refresh_cache, load_katalog
 from src.data.processor import (
     get_maintenance_summary,
@@ -94,12 +95,31 @@ st.markdown("""
 def main():
     """Main application function"""
     
+    # Check authentication
+    if not check_authentication():
+        show_login_page()
+        return
+    
     # Header
     st.markdown(f'<div class="main-header">{PAGE_ICON} {PAGE_TITLE}</div>', 
                 unsafe_allow_html=True)
     
     # Sidebar
     with st.sidebar:
+        
+        # User info and logout
+        current_user = get_current_user()
+        st.markdown(f"""
+        <div style="background-color: #e8f4f8; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0; color: #2c3e50;"><strong>👤 {current_user}</strong></p>
+            <p style="margin: 0; color: #7f8c8d; font-size: 0.85rem;">Logged in</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("🚪 Logout", use_container_width=True, type="secondary"):
+            logout()
+        
+        st.divider()
         
         st.title("🎯 Navigation")
         
