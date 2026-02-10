@@ -171,20 +171,16 @@ def main():
         if has_access('executive'):
             st.markdown("### 📋 EXECUTIVE")
             
-            exec_options = ["📊 Overview"]
-            exec_index = exec_options.index(st.session_state.active_page) if st.session_state.active_page in exec_options else None
-            
-            page_exec = st.radio(
-                "executive_section",
-                exec_options,
-                index=exec_index,
-                label_visibility="collapsed",
-                key="nav_exec"
-            )
-            
-            if page_exec and page_exec != st.session_state.active_page:
-                st.session_state.active_page = page_exec
-                st.rerun()
+            # Use button for better stability in production
+            if st.button(
+                "📊 Overview",
+                use_container_width=True,
+                type="primary" if st.session_state.active_page == "📊 Overview" else "secondary",
+                key="btn_overview"
+            ):
+                if st.session_state.active_page != "📊 Overview":
+                    st.session_state.active_page = "📊 Overview"
+                    st.rerun()
             
             st.divider()
         
@@ -192,20 +188,26 @@ def main():
         if has_access('operational'):
             st.markdown("### ⚙️ OPERATIONAL")
             
-            ops_options = ["📊 Tactical Dashboard", "⚠️ Critical Items"]
-            ops_index = ops_options.index(st.session_state.active_page) if st.session_state.active_page in ops_options else None
+            # Use buttons for better stability in production
+            if st.button(
+                "📊 Tactical Dashboard",
+                use_container_width=True,
+                type="primary" if st.session_state.active_page == "📊 Tactical Dashboard" else "secondary",
+                key="btn_tactical"
+            ):
+                if st.session_state.active_page != "📊 Tactical Dashboard":
+                    st.session_state.active_page = "📊 Tactical Dashboard"
+                    st.rerun()
             
-            page_ops = st.radio(
-                "operational_section",
-                ops_options,
-                index=ops_index,
-                label_visibility="collapsed",
-                key="nav_ops"
-            )
-            
-            if page_ops and page_ops != st.session_state.active_page:
-                st.session_state.active_page = page_ops
-                st.rerun()
+            if st.button(
+                "⚠️ Critical Items",
+                use_container_width=True,
+                type="primary" if st.session_state.active_page == "⚠️ Critical Items" else "secondary",
+                key="btn_critical"
+            ):
+                if st.session_state.active_page != "⚠️ Critical Items":
+                    st.session_state.active_page = "⚠️ Critical Items"
+                    st.rerun()
             
             st.divider()
         
@@ -213,20 +215,26 @@ def main():
         if has_access('planning'):
             st.markdown("### 📈 PLANNING")
             
-            plan_options = ["📈 Strategic Dashboard", "📋 Data Tables"]
-            plan_index = plan_options.index(st.session_state.active_page) if st.session_state.active_page in plan_options else None
+            # Use buttons for better stability in production
+            if st.button(
+                "📈 Strategic Dashboard",
+                use_container_width=True,
+                type="primary" if st.session_state.active_page == "📈 Strategic Dashboard" else "secondary",
+                key="btn_strategic"
+            ):
+                if st.session_state.active_page != "📈 Strategic Dashboard":
+                    st.session_state.active_page = "📈 Strategic Dashboard"
+                    st.rerun()
             
-            page_plan = st.radio(
-                "planning_section",
-                plan_options,
-                index=plan_index,
-                label_visibility="collapsed",
-                key="nav_plan"
-            )
-            
-            if page_plan and page_plan != st.session_state.active_page:
-                st.session_state.active_page = page_plan
-                st.rerun()
+            if st.button(
+                "📋 Data Tables",
+                use_container_width=True,
+                type="primary" if st.session_state.active_page == "📋 Data Tables" else "secondary",
+                key="btn_data_tables"
+            ):
+                if st.session_state.active_page != "📋 Data Tables":
+                    st.session_state.active_page = "📋 Data Tables"
+                    st.rerun()
             
             st.divider()
         
