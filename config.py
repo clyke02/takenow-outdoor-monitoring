@@ -57,7 +57,32 @@ CHART_HEIGHT_DEFAULT = 400  # Default chart height
 ENABLE_PROFILER = False  # Set to True to debug performance
 
 # Authentication settings
-# Simple single-user authentication for demo purposes
-USERNAME = "admin"
-PASSWORD = "admin123"  # In production, use hashed passwords
-USER_DISPLAY_NAME = "Administrator"
+# Multi-user with role-based access control
+USERS = {
+    "owner": {
+        "password": "owner123",
+        "display_name": "Admin Owner",
+        "role": "owner",
+        "description": "Full access to Executive and Planning"
+    },
+    "operational": {
+        "password": "ops123",
+        "display_name": "Admin Operational",
+        "role": "operational",
+        "description": "Access to Operational only"
+    }
+}
+
+# Role-based menu access
+ROLE_PERMISSIONS = {
+    "owner": {
+        "executive": True,
+        "operational": False,
+        "planning": True
+    },
+    "operational": {
+        "executive": False,
+        "operational": True,
+        "planning": False
+    }
+}

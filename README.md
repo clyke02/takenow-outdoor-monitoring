@@ -47,28 +47,48 @@ Dashboard akan terbuka di browser pada `http://localhost:8501`
 
 Setelah dashboard terbuka, Anda akan melihat **Login Page**.
 
-**Default Credentials:**
+**User Accounts:**
 
-- Username: `admin`
-- Password: `admin123`
+**A. Admin/Owner** (Akses: Executive & Planning)
+- Username: `owner`
+- Password: `owner123`
 
-Setelah login berhasil, Anda akan diarahkan ke dashboard utama.
+**B. Admin Operational** (Akses: Operational only)
+- Username: `operational`
+- Password: `ops123`
 
-> 📖 Untuk detail lengkap tentang fitur login, lihat [LOGIN_GUIDE.md](LOGIN_GUIDE.md)
+Setelah login berhasil, Anda akan diarahkan ke dashboard sesuai role.
 
-## 🔐 Authentication
+> 📖 Untuk detail lengkap tentang fitur login dan RBAC, lihat:
+> - [LOGIN_GUIDE.md](LOGIN_GUIDE.md)
+> - [RBAC_GUIDE.md](RBAC_GUIDE.md)
 
-Dashboard dilengkapi dengan **simple authentication** untuk memastikan hanya user terotorisasi yang dapat akses.
+## 🔐 Authentication & Authorization
+
+Dashboard dilengkapi dengan **Role-Based Access Control (RBAC)** untuk memastikan setiap user hanya dapat mengakses fitur sesuai role-nya.
 
 **Fitur:**
 
 - ✅ Login page dengan username/password
+- ✅ Multi-user support (Owner & Operational)
+- ✅ Role-based menu access (different menus for different roles)
 - ✅ Session management (tetap login selama sesi browser)
-- ✅ User info display di sidebar
+- ✅ User info display dengan role badge di sidebar
+- ✅ Access control enforcement (error jika akses unauthorized)
 - ✅ Logout button untuk keluar
 
+**Access Levels:**
+
+| Feature | Owner 👔 | Operational 🔧 |
+|---------|----------|----------------|
+| Executive Dashboard | ✅ | ❌ |
+| Tactical Dashboard | ❌ | ✅ |
+| Critical Items | ❌ | ✅ |
+| Strategic Dashboard | ✅ | ❌ |
+| Data Tables | ✅ | ❌ |
+
 **Security Note:**  
-Implementasi ini adalah demo authentication untuk keperluan academic/internal. Untuk production, implementasikan password hashing dan security best practices.
+Implementasi ini adalah demo authentication untuk keperluan academic/internal. Untuk production, implementasikan password hashing, database user management, dan security best practices lainnya.
 
 ## 📊 Fitur Dashboard
 

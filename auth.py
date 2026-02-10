@@ -4,7 +4,7 @@ Simple single-user authentication
 """
 
 import streamlit as st
-from config import USERNAME, PASSWORD, USER_DISPLAY_NAME
+from config import USERS, ROLE_PERMISSIONS
 
 
 def show_login_page():
@@ -35,36 +35,46 @@ def show_login_page():
         st.markdown("### 🔐 Login")
         st.markdown("")  # Spacer
         
-        # Username input
-        username = st.text_input(
-            "Username",
-            placeholder="Enter your username",
-            key="login_username"
-        )
+        # Use form to enable Enter key submit
+        with st.form(key="login_form", clear_on_submit=False):
+            # Username input
+            username = st.text_input(
+                "Username",
+                placeholder="Enter your username",
+                key="login_username"
+            )
+            
+            # Password input
+            password = st.text_input(
+                "Password",
+                type="password",
+                placeholder="Enter your password",
+                key="login_password"
+            )
+            
+            st.markdown("")  # Spacer
+            
+            # Login button (form submit)
+            login_button = st.form_submit_button("🔑 Login", use_container_width=True, type="primary")
         
-        # Password input
-        password = st.text_input(
-            "Password",
-            type="password",
-            placeholder="Enter your password",
-            key="login_password"
-        )
-        
-        st.markdown("")  # Spacer
-        
-        # Login button
-        login_button = st.button("🔑 Login", use_container_width=True, type="primary")
-        
-        # Handle login
+        # Handle login (outside form to avoid rerun issues)
         if login_button:
-            if authenticate(username, password):
-                st.session_state.logged_in = True
-                st.session_state.username = username
-                st.session_state.display_name = USER_DISPLAY_NAME
-                st.success("✅ Login successful! Redirecting...")
-                st.rerun()
+            if username and password:  # Check if fields are not empty
+                user_data = authenticate(username, password)
+                if user_data:
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.session_state.display_name = user_data["display_name"]
+                    st.session_state.user_role = user_data["role"]
+                    # Clear any previous active_page to prevent unauthorized access
+                    if 'active_page' in st.session_state:
+                        del st.session_state.active_page
+                    st.success(f"✅ Login successful! Welcome {user_data['display_name']}")
+                    st.rerun()
+                else:
+                    st.error("❌ Invalid username or password")
             else:
-                st.error("❌ Invalid username or password")
+                st.warning("⚠️ Please enter both username and password")
         
         # Footer
         st.markdown("")  # Spacer
@@ -85,9 +95,12 @@ def authenticate(username, password):
         password (str): Password input
     
     Returns:
-        bool: True if credentials are valid, False otherwise
+        dict or None: User data if valid, None otherwise
     """
-    return username == USERNAME and password == PASSWORD
+    if username in USERS:
+        if USERS[username]["password"] == password:
+            return USERS[username]
+    return None
 
 
 def check_authentication():
@@ -105,6 +118,10 @@ def logout():
     st.session_state.logged_in = False
     st.session_state.username = None
     st.session_state.display_name = None
+    st.session_state.user_role = None
+    # Clear active page to prevent unauthorized access after logout
+    if 'active_page' in st.session_state:
+        del st.session_state.active_page
     st.rerun()
 
 
@@ -116,3 +133,29 @@ def get_current_user():
         str: User display name or None
     """
     return st.session_state.get('display_name', None)
+
+
+def get_user_role():
+    """
+    Get current user role
+    
+    Returns:
+        str: User role or None
+    """
+    return st.session_state.get('user_role', None)
+
+
+def has_access(section):
+    """
+    Check if current user has access to a section
+    
+    Args:
+        section (str): Section name ('executive', 'operational', 'planning')
+    
+    Returns:
+        bool: True if user has access, False otherwise
+    """
+    role = get_user_role()
+    if not role:
+        return False
+    return ROLE_PERMISSIONS.get(role, {}).get(section, False)

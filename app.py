@@ -16,7 +16,7 @@ sys.path.append(str(Path(__file__).parent))
 
 # Import modules
 from config import PAGE_TITLE, PAGE_ICON, LAYOUT, MAX_ROWS_DISPLAY
-from auth import show_login_page, check_authentication, logout, get_current_user
+from auth import show_login_page, check_authentication, logout, get_current_user, get_user_role, has_access
 from src.data.loader import load_all_data, refresh_cache, load_katalog
 from src.data.processor import (
     get_maintenance_summary,
@@ -109,10 +109,21 @@ def main():
         
         # User info and logout
         current_user = get_current_user()
+        user_role = get_user_role()
+        
+        # Display user info with role badge
+        role_color = "#3498db" if user_role == "owner" else "#e67e22"
+        role_label = "Owner" if user_role == "owner" else "Operational"
+        
         st.markdown(f"""
         <div style="background-color: #e8f4f8; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
             <p style="margin: 0; color: #2c3e50;"><strong>👤 {current_user}</strong></p>
-            <p style="margin: 0; color: #7f8c8d; font-size: 0.85rem;">Logged in</p>
+            <p style="margin: 5px 0 0 0;">
+                <span style="background-color: {role_color}; color: white; padding: 2px 8px; 
+                             border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                    {role_label}
+                </span>
+            </p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -123,67 +134,101 @@ def main():
         
         st.title("🎯 Navigation")
         
-        # Initialize session state
+        # Initialize session state with default page based on role
+        # Also validate if current active_page is allowed for current role
         if 'active_page' not in st.session_state:
-            st.session_state.active_page = "📊 Overview"
+            # Set default page based on role
+            if has_access('executive'):
+                st.session_state.active_page = "📊 Overview"
+            elif has_access('operational'):
+                st.session_state.active_page = "📊 Tactical Dashboard"
+            elif has_access('planning'):
+                st.session_state.active_page = "📈 Strategic Dashboard"
+        else:
+            # Validate current active_page is allowed for current role
+            current_page = st.session_state.active_page
+            page_to_section = {
+                "📊 Overview": "executive",
+                "📊 Tactical Dashboard": "operational",
+                "⚠️ Critical Items": "operational",
+                "📈 Strategic Dashboard": "planning",
+                "📋 Data Tables": "planning"
+            }
+            
+            # If current page is not allowed for current role, reset to default
+            if current_page in page_to_section:
+                required_section = page_to_section[current_page]
+                if not has_access(required_section):
+                    # Reset to appropriate default page
+                    if has_access('executive'):
+                        st.session_state.active_page = "📊 Overview"
+                    elif has_access('operational'):
+                        st.session_state.active_page = "📊 Tactical Dashboard"
+                    elif has_access('planning'):
+                        st.session_state.active_page = "📈 Strategic Dashboard"
         
-        # Executive Section
-        st.markdown("### 📋 EXECUTIVE")
+        # EXECUTIVE SECTION - Only show if user has access
+        if has_access('executive'):
+            st.markdown("### 📋 EXECUTIVE")
+            
+            exec_options = ["📊 Overview"]
+            exec_index = exec_options.index(st.session_state.active_page) if st.session_state.active_page in exec_options else None
+            
+            page_exec = st.radio(
+                "executive_section",
+                exec_options,
+                index=exec_index,
+                label_visibility="collapsed",
+                key="nav_exec"
+            )
+            
+            if page_exec and page_exec != st.session_state.active_page:
+                st.session_state.active_page = page_exec
+                st.rerun()
+            
+            st.divider()
         
-        exec_options = ["📊 Overview"]
-        exec_index = exec_options.index(st.session_state.active_page) if st.session_state.active_page in exec_options else None
+        # OPERATIONAL SECTION - Only show if user has access
+        if has_access('operational'):
+            st.markdown("### ⚙️ OPERATIONAL")
+            
+            ops_options = ["📊 Tactical Dashboard", "⚠️ Critical Items"]
+            ops_index = ops_options.index(st.session_state.active_page) if st.session_state.active_page in ops_options else None
+            
+            page_ops = st.radio(
+                "operational_section",
+                ops_options,
+                index=ops_index,
+                label_visibility="collapsed",
+                key="nav_ops"
+            )
+            
+            if page_ops and page_ops != st.session_state.active_page:
+                st.session_state.active_page = page_ops
+                st.rerun()
+            
+            st.divider()
         
-        page_exec = st.radio(
-            "executive_section",
-            exec_options,
-            index=exec_index,
-            label_visibility="collapsed",
-            key="nav_exec"
-        )
-        
-        if page_exec and page_exec != st.session_state.active_page:
-            st.session_state.active_page = page_exec
-            st.rerun()
-        
-        st.divider()
-        
-        # Operational Section
-        st.markdown("### ⚙️ OPERATIONAL")
-        
-        ops_options = ["📊 Tactical Dashboard", "⚠️ Critical Items"]
-        ops_index = ops_options.index(st.session_state.active_page) if st.session_state.active_page in ops_options else None
-        
-        page_ops = st.radio(
-            "operational_section",
-            ops_options,
-            index=ops_index,
-            label_visibility="collapsed",
-            key="nav_ops"
-        )
-        
-        if page_ops and page_ops != st.session_state.active_page:
-            st.session_state.active_page = page_ops
-            st.rerun()
-        
-        st.divider()
-        
-        # Planning Section
-        st.markdown("### 📈 PLANNING")
-        
-        plan_options = ["📈 Strategic Dashboard", "📋 Data Tables"]
-        plan_index = plan_options.index(st.session_state.active_page) if st.session_state.active_page in plan_options else None
-        
-        page_plan = st.radio(
-            "planning_section",
-            plan_options,
-            index=plan_index,
-            label_visibility="collapsed",
-            key="nav_plan"
-        )
-        
-        if page_plan and page_plan != st.session_state.active_page:
-            st.session_state.active_page = page_plan
-            st.rerun()
+        # PLANNING SECTION - Only show if user has access
+        if has_access('planning'):
+            st.markdown("### 📈 PLANNING")
+            
+            plan_options = ["📈 Strategic Dashboard", "📋 Data Tables"]
+            plan_index = plan_options.index(st.session_state.active_page) if st.session_state.active_page in plan_options else None
+            
+            page_plan = st.radio(
+                "planning_section",
+                plan_options,
+                index=plan_index,
+                label_visibility="collapsed",
+                key="nav_plan"
+            )
+            
+            if page_plan and page_plan != st.session_state.active_page:
+                st.session_state.active_page = page_plan
+                st.rerun()
+            
+            st.divider()
         
         # Use active page from session state
         page = st.session_state.active_page
@@ -207,17 +252,36 @@ def main():
         st.error("❌ Data tidak dapat dimuat. Pastikan semua file dataset tersedia.")
         return
     
-    # Route ke halaman yang dipilih
+    # Route ke halaman yang dipilih dengan access control
     if page == "📊 Overview":
-        show_overview_page(katalog_df, penyewaan_df, maintenance_df, insight_df)
+        if has_access('executive'):
+            show_overview_page(katalog_df, penyewaan_df, maintenance_df, insight_df)
+        else:
+            st.error("🚫 Access Denied: You don't have permission to access Executive Dashboard")
+    
     elif page == "📊 Tactical Dashboard":
-        show_tactical_dashboard(insight_df, maintenance_df)
-    elif page == "📈 Strategic Dashboard":
-        show_strategic_dashboard(insight_df)
+        if has_access('operational'):
+            show_tactical_dashboard(insight_df, maintenance_df)
+        else:
+            st.error("🚫 Access Denied: You don't have permission to access Tactical Dashboard")
+    
     elif page == "⚠️ Critical Items":
-        show_critical_items_page(insight_df, maintenance_df)
+        if has_access('operational'):
+            show_critical_items_page(insight_df, maintenance_df)
+        else:
+            st.error("🚫 Access Denied: You don't have permission to access Critical Items")
+    
+    elif page == "📈 Strategic Dashboard":
+        if has_access('planning'):
+            show_strategic_dashboard(insight_df)
+        else:
+            st.error("🚫 Access Denied: You don't have permission to access Strategic Dashboard")
+    
     elif page == "📋 Data Tables":
-        show_data_tables_page(katalog_df, penyewaan_df, maintenance_df, insight_df)
+        if has_access('planning'):
+            show_data_tables_page(katalog_df, penyewaan_df, maintenance_df, insight_df)
+        else:
+            st.error("🚫 Access Denied: You don't have permission to access Data Tables")
 
 
 def show_overview_page(katalog_df, penyewaan_df, maintenance_df, insight_df):
@@ -848,21 +912,28 @@ def show_data_tables_page(katalog_df, penyewaan_df, maintenance_df, insight_df):
         st.subheader("Katalog Barang")
         st.info(f"Total: {len(katalog_df)} items")
         
-        # Pagination for Katalog
+        # Pagination for Katalog - Reduced rows for better performance
         if 'katalog_page' not in st.session_state:
             st.session_state.katalog_page = 0
         
-        rows_per_page = MAX_ROWS_DISPLAY
+        rows_per_page = 10  # Reduced from MAX_ROWS_DISPLAY
         total_pages = max(1, (len(katalog_df) - 1) // rows_per_page + 1)
         start_idx = st.session_state.katalog_page * rows_per_page
         end_idx = min(start_idx + rows_per_page, len(katalog_df))
         
-        # Format tanggal_pembelian untuk display
+        # Format tanggal_pembelian untuk display with error handling
         display_df = katalog_df.iloc[start_idx:end_idx].copy()
         if 'tanggal_pembelian' in display_df.columns:
-            display_df['tanggal_pembelian'] = display_df['tanggal_pembelian'].dt.strftime('%Y-%m-%d')
+            try:
+                # Convert to string safely, handling NaT/None
+                display_df['tanggal_pembelian'] = display_df['tanggal_pembelian'].apply(
+                    lambda x: x.strftime('%Y-%m-%d') if pd.notna(x) else '-'
+                )
+            except Exception as e:
+                # Fallback: convert to string directly
+                display_df['tanggal_pembelian'] = display_df['tanggal_pembelian'].astype(str)
         
-        st.dataframe(display_df, use_container_width=True)
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
         
         # Pagination controls
         col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
@@ -893,23 +964,33 @@ def show_data_tables_page(katalog_df, penyewaan_df, maintenance_df, insight_df):
         st.subheader("Riwayat Penyewaan")
         st.info(f"Total: {len(penyewaan_df)} rows")
         
-        # Pagination for Penyewaan
+        # Pagination for Penyewaan - Reduced rows
         if 'penyewaan_page' not in st.session_state:
             st.session_state.penyewaan_page = 0
         
-        rows_per_page = MAX_ROWS_DISPLAY
+        rows_per_page = 10  # Reduced for better performance
         total_pages = max(1, (len(penyewaan_df) - 1) // rows_per_page + 1)
         start_idx = st.session_state.penyewaan_page * rows_per_page
         end_idx = min(start_idx + rows_per_page, len(penyewaan_df))
         
-        # Format tanggal untuk display
+        # Format tanggal untuk display with error handling
         display_df = penyewaan_df.iloc[start_idx:end_idx].copy()
         if 'tanggal_sewa' in display_df.columns:
-            display_df['tanggal_sewa'] = display_df['tanggal_sewa'].dt.strftime('%Y-%m-%d')
+            try:
+                display_df['tanggal_sewa'] = display_df['tanggal_sewa'].apply(
+                    lambda x: x.strftime('%Y-%m-%d') if pd.notna(x) else '-'
+                )
+            except:
+                display_df['tanggal_sewa'] = display_df['tanggal_sewa'].astype(str)
         if 'tanggal_kembali' in display_df.columns:
-            display_df['tanggal_kembali'] = display_df['tanggal_kembali'].dt.strftime('%Y-%m-%d')
+            try:
+                display_df['tanggal_kembali'] = display_df['tanggal_kembali'].apply(
+                    lambda x: x.strftime('%Y-%m-%d') if pd.notna(x) else '-'
+                )
+            except:
+                display_df['tanggal_kembali'] = display_df['tanggal_kembali'].astype(str)
         
-        st.dataframe(display_df, use_container_width=True)
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
         
         # Pagination controls
         col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
@@ -940,25 +1021,30 @@ def show_data_tables_page(katalog_df, penyewaan_df, maintenance_df, insight_df):
         st.subheader("Riwayat Maintenance")
         st.info(f"Total: {len(maintenance_df)} events")
         
-        # Pagination for Maintenance
+        # Pagination for Maintenance - Reduced rows
         if 'maintenance_page' not in st.session_state:
             st.session_state.maintenance_page = 0
         
-        rows_per_page = MAX_ROWS_DISPLAY
+        rows_per_page = 10  # Reduced for better performance
         total_pages = max(1, (len(maintenance_df) - 1) // rows_per_page + 1)
         start_idx = st.session_state.maintenance_page * rows_per_page
         end_idx = min(start_idx + rows_per_page, len(maintenance_df))
         
-        # Format tanggal_maintenance untuk display
+        # Format tanggal_maintenance untuk display with error handling
         display_df = maintenance_df.iloc[start_idx:end_idx].copy()
         if 'tanggal_maintenance' in display_df.columns:
-            display_df['tanggal_maintenance'] = display_df['tanggal_maintenance'].dt.strftime('%Y-%m-%d')
+            try:
+                display_df['tanggal_maintenance'] = display_df['tanggal_maintenance'].apply(
+                    lambda x: x.strftime('%Y-%m-%d') if pd.notna(x) else '-'
+                )
+            except:
+                display_df['tanggal_maintenance'] = display_df['tanggal_maintenance'].astype(str)
         
         # Remove biaya column if exists
         if 'biaya' in display_df.columns:
             display_df = display_df.drop(columns=['biaya'])
         
-        st.dataframe(display_df, use_container_width=True)
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
         
         # Pagination controls
         col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
@@ -1038,7 +1124,7 @@ def show_data_tables_page(katalog_df, penyewaan_df, maintenance_df, insight_df):
                 lambda x: f"{x:.1f}%" if pd.notna(x) else "0%"
             )
         
-        st.dataframe(display_df.iloc[start_idx:end_idx], use_container_width=True)
+        st.dataframe(display_df.iloc[start_idx:end_idx], use_container_width=True, hide_index=True)
         
         # Pagination controls
         col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
