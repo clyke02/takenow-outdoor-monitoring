@@ -421,40 +421,7 @@ def show_overview_page(katalog_df, penyewaan_df, maintenance_df, insight_df):
     
     st.divider()
     
-    # Navigation Cards
-    st.subheader("🧭 Quick Navigation")
     
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                    padding: 20px; border-radius: 15px; color: white; text-align: center;">
-            <h3>📊 Tactical Dashboard</h3>
-            <p>Monitoring operasional harian</p>
-            <p style="font-size: 0.9em; opacity: 0.9;">• Critical items<br>• Performance metrics<br>• Real-time alerts</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
-                    padding: 20px; border-radius: 15px; color: white; text-align: center;">
-            <h3>📈 Strategic Dashboard</h3>
-            <p>Analisis jangka panjang</p>
-            <p style="font-size: 0.9em; opacity: 0.9;">• Investment analysis<br>• Portfolio evaluation<br>• Lifecycle planning</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
-                    padding: 20px; border-radius: 15px; color: white; text-align: center;">
-            <h3>📋 Data Tables</h3>
-            <p>Eksplorasi data detail</p>
-            <p style="font-size: 0.9em; opacity: 0.9;">• Raw data access<br>• Custom filtering<br>• Export options</p>
-        </div>
-        """, unsafe_allow_html=True)
 
 
 def show_tactical_dashboard(insight_df, maintenance_df):
